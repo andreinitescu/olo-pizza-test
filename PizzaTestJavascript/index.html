@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Pizza Test</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    </head>
+    
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 col-md-offset-4">
+                
+                    <ol data-ng-app="pizzaTest" data-ng-controller="pizzaTestController" class="list-group">
+                        <li data-ng-repeat="toppingCount in toppingCounts" class="list-group-item">
+                            <span class="badge">{{ toppingCount.count }}</span>
+                            <span>
+                                {{ toppingCount.toppingList }}
+                            </span>
+                        </li>
+                    </ol>
+                    
+                </div>
+            </div>
+        </div>
+    </body>
+    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+    <script type="text/javascript">
+        var app = angular.module('pizzaTest', []);
+        app.controller('pizzaTestController', function($scope, $http) {
+            
+            $scope.process = function(toppings){
+                $scope.toppings = toppings;
+                $scope.toppingCounts = new Array();
+                
+                for(var i = 0; i < $scope.toppings.length; i++)
+                {
+                    var found = false;
+                    
+                    if ($scope.toppings[i].toppings.length > 1) $scope.toppings[i].toppings.sort();
+                    $scope.toppings[i].toppingList = $scope.toppings[i].toppings.toString();
+                    
+                    for(var j = 0; j < $scope.toppingCounts.length; j++)
+                    {
+                        if ($scope.toppingCounts[j].toppingList == $scope.toppings[i].toppingList)
+                        {
+                            found = true;
+                            $scope.toppingCounts[j].count++;
+                            continue;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        $scope.toppingCounts.push({
+                            count : 1,
+                            toppingList : $scope.toppings[i].toppingList
+                        });
+                    }
+                }
+                
+                $scope.toppingCounts = _.take(_.sortByOrder($scope.toppingCounts, ['count'], [false]), 20);
+            };
+            
+            $http
+                .get('http://files.olo.com/pizzas.json')
+                .then(function(response) {
+                    $scope.process(response.data);
+                });
+            
+        });
+    </script>
+</html>
